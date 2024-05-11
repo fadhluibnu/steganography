@@ -140,17 +140,10 @@ def decrypt(message):
             if len(temp_matrix) == matrix_size:
                 matrix_message.append(temp_matrix)
             else:
-                print(temp_matrix)
-                if len(temp_matrix) < rows:
-                    lack = rows % len(temp_matrix)
-                    while lack > 0:
-                        temp_matrix.append(0)
-                        lack -= 1
-                else: 
-                    lack = matrix_size - len(temp_matrix)
-                    while lack > 0:
-                        temp_matrix.append(0)
-                        lack -= 1
+                lack = matrix_size  - len(temp_matrix)
+                while lack > 0:
+                    temp_matrix.append(0)
+                    lack -= 1
                 matrix_message.append(temp_matrix)
             i += matrix_size
 
