@@ -24,10 +24,11 @@ class SteganografiController extends Controller
 
             $photo = fopen($file->path(), 'r');
 
+            $filename = pathinfo($file->getClientOriginalName(),PATHINFO_FILENAME)."."."png";
             $response = Http::attach(
                 'image',
                 $photo,
-                $file->getFilename(),
+                $filename,
             )->post(env("API_BASE_URL") . 'upload', [
                 "id" => "1",
                 "filename" => $file->getFilename(),
@@ -56,7 +57,7 @@ class SteganografiController extends Controller
             $response = Http::attach(
                 'image',
                 $photo,
-                $file->getFilename(),
+                pathinfo($file->getClientOriginalName(),PATHINFO_FILENAME)."."."png",
             )->post(env("API_BASE_URL") . 'extract_image');
             fclose($photo);
 

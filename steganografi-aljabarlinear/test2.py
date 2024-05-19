@@ -10,4 +10,5 @@
 
 # print(multiply)
 
-print(1 % 2)
+print(276 % 95)
+print(2 * 95 + 86)

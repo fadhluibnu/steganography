@@ -17,12 +17,12 @@ def upload_image():
     if request.method == 'POST':
         file = request.files['image']
         path = "original_image/"
-        file_name = secure_filename("original_"+ str(request.form['id']) + "_" + file.filename + ".png")
+        file_name = secure_filename(file.filename)
         file.save(path +file_name)
 
         encrypt_message = encrypt(request.form['message'])
 
-        result = embed_message(str(request.form['id']), path+file_name, encrypt_message)
+        result = embed_message(str(request.form['id']), path, file_name, encrypt_message)
     
     return jsonify({
         'original_image' : path+file_name,
@@ -36,7 +36,7 @@ def extract():
     if request.method == 'POST':
         file = request.files['image']
         path = "temp/"
-        file_name = secure_filename("temp_" + file.filename + ".png")
+        file_name = secure_filename("temp_" + file.filename)
         file.save(path +file_name)
         
         extract_image = extract_message(path+file_name)

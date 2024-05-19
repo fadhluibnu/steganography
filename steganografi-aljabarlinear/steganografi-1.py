@@ -3,13 +3,10 @@ import numpy as np
 import string
 import random
 
-unicode = list(
-    " " + 
-    string.ascii_uppercase + 
-    string.ascii_lowercase + 
-    string.digits + 
-    string.punctuation
-)
+unicode = list(" " + string.ascii_uppercase + string.ascii_lowercase + string.digits + string.punctuation)
+print(len(unicode))
+
+# message = 'Aku adalah seorang pilot. Pesawat saya terbang dari Indonesia Ke Arab Saudi.'
 
 def generate_random_matrix(rows, cols, min_val, max_val):
     # Menghasilkan matriks bilangan bulat acak
@@ -35,49 +32,64 @@ def encrypt(message):
     
     encrypted.append([unicode[rows], unicode[cols]])
     encrypted.append(matrix_key_encrypt)
-    
+
+    encrypted = sum(encrypted, [])
+
+    matrix_size = rows * cols
+
     print("\nEncode : ")
     print("key : " , matrix_key)
-    
-    len_message = len(message)
-    kurang = 0
-    if len_message > rows:
-        kurang = rows - (len_message % rows)
-    else :
-        kurang = rows - len_message
-        
-    while kurang > 0:
-        message += " "
-        kurang -= 1
-    
-    matrix_message = []
+    encrypt_message = []
     for i in message:
-        matrix_message.append(unicode.index(i))
-    print(matrix_message)
+        encrypt_message.append(unicode.index(i))
     
-    matrix_message = np.array(matrix_message)
-    matrix_message = matrix_message.reshape(rows, len(matrix_message) // rows)
-    
-    multiply = np.matmul(matrix_key, matrix_message)
-    
-    
-    multiply = multiply.flatten()
-    print(multiply)
-    
-    encrypt_matriks = []
-    for item in multiply:
-        reduce = 0
-        while item >= 95:
-            reduce = item // 95
-            item = item % 95 
+    print("encrypt_message : ")
+    print(encrypt_message)
+
+    matrix_message = []
+    i = 0
+    while i < len(encrypt_message):
+        if i < len(encrypt_message):
+            temp_matrix = encrypt_message[i:i+matrix_size]
+            if len(temp_matrix) == matrix_size:
+                print(temp_matrix)
+                matrix_message.append(temp_matrix)
+            else:
+                lack = matrix_size  - len(temp_matrix)
+                while lack > 0:
+                    temp_matrix.append(0)
+                    lack -= 1
+                matrix_message.append(temp_matrix)
+            i += matrix_size
         
-        encrypt_matriks.append(unicode[item])    
-        encrypt_matriks.append(unicode[reduce]) 
-    
-    print(encrypt_matriks)   
-    
-    encrypted.append(encrypt_matriks)
-    encrypted = sum(encrypted, [])
+    print("matrix_message : ")
+    print(matrix_message)
+
+    multiply_matrix = []
+    for matrix in matrix_message:
+        matrix = np.array(matrix)
+        if len(matrix) == matrix_size:
+            matrix = matrix.reshape(cols, rows)
+        else:
+            matrix = matrix.reshape(rows,1)
+        multiply_matrix.append(np.matmul(matrix_key, matrix))
+
+    print("multiply_matrix : ")
+    print(multiply_matrix)
+
+    for matrix in multiply_matrix:
+        matrix = matrix.flatten()
+        for item in matrix:
+            if item < 95:
+                encrypted.append(unicode[item ])
+                encrypted.append(unicode[0])
+            else:
+                many_reduce = 0
+                while item >= 95:
+                    item -= 95
+                    many_reduce += 1
+                encrypted.append(unicode[item])
+                encrypted.append(unicode[many_reduce])
 
     return "".join(encrypted)
 
@@ -87,6 +99,7 @@ def decrypt(message):
     message = list(message)
     rows = unicode.index(message[0])
     cols = unicode.index(message[1])
+    matrix_size  = rows * cols
     del message[0:2]
 
     key_encrypt = message[0:rows * cols]
@@ -99,36 +112,65 @@ def decrypt(message):
     key = np.linalg.inv(key)
     del message[0:rows * cols]
 
-    print(list(message))
-
     transform_message = []
     for item in message:
         transform_message.append(unicode.index(item)) 
+    
+    print("transform_message : ")
     print(transform_message)
     
+    real_result = []
+    i = 0
+    while i < len(transform_message):
+        item = transform_message[i]
+        many_reduce = transform_message[i+1]
+        while many_reduce > 0:
+            item += 95
+            many_reduce -= 1
+        real_result.append(item)
+        i += 2
+    
+    print("real_result : ")
+    print(real_result)
+    
     matrix_message = []
-    idx = 0
-    while idx < len(transform_message):
-        item = transform_message[idx] + (95 * transform_message[idx + 1])
-        matrix_message.append(item)
-        idx += 2
-        
+    i = 0
+    while i < len(real_result):
+        if i < len(real_result):
+            temp_matrix = real_result[i:i+matrix_size]
+            if len(temp_matrix) == matrix_size:
+                matrix_message.append(temp_matrix)
+            else:
+                lack = matrix_size  - len(temp_matrix)
+                while lack > 0:
+                    temp_matrix.append(0)
+                    lack -= 1
+                matrix_message.append(temp_matrix)
+            i += matrix_size
+
+    print("matrix_message : ")
     print(matrix_message)
+
+    multiply_matrix = []
+    for matrix in matrix_message:
+        matrix = np.array(matrix)
+        if len(matrix) == matrix_size:
+            matrix = matrix.reshape(cols,rows)
+        else:
+            matrix = matrix.reshape(rows,1)
+        multiply_matrix.append(np.matmul(key, matrix))
     
-    matrix_message = np.array(matrix_message)
-    matrix_message = matrix_message.reshape(rows, len(matrix_message) // rows)
-    
-    multiply = np.matmul(key, matrix_message)
-    
-    multiply = multiply.flatten()
-    
-    print(multiply)
-    
+    print("multiply_matrix : ")
+    print(multiply_matrix)
+
     decrypted = []
-    for item in multiply:
-        decrypted.append(unicode[round(item)])
+    for matrix in multiply_matrix:
+        matrix = matrix.flatten()
+        for item in matrix:
+            decrypted.append(unicode[round(item)])
 
     return "".join(decrypted)
+
 
 # Fungsi untuk mengonversi teks menjadi representasi biner menggunakan ASCII
 def text_to_binary(text):
@@ -212,15 +254,15 @@ def extract_message(path):
 
 
 # path = 'original_image/'
-message = '1234'
+# message = '1234'
 
-enkripsi = encrypt(message)
-print(enkripsi)
+# enkripsi = encrypt(message)
+# print(enkripsi)
 
 # embedded_image = embed_message("2", path, 'majelisazzahir_1710878115127.jpeg', enkripsi)
 
 # extranct_image = extract_message('embedded_image/embedded_majelisazzahir_1710878115127.jpeg')
 
-decode = decrypt(enkripsi)
+# decode = decrypt(extranct_image)
 
-print(decode)
+# print(decode)
