@@ -19,9 +19,9 @@ cd steganografi_app
 composer install
 npm install
 ```
-rename file .env.example => .env
 
 ```
+cp .env.example .env
 php artisan key:generate
 php artisan serve
 npm run dev
